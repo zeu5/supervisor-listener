@@ -1,0 +1,33 @@
+---
+
+handlers:
+- slack:
+    token:
+    webhook:
+- aws_sns:
+    access_key:
+    access_secret:
+    region:
+    topic:
+- email:
+    domain:
+    port:
+    user:
+    pass:
+    from:
+
+events:
+- name: PROCESS_STATE_EXITED
+  handlers:
+  - slack:
+      channel:
+  - aws_sns:
+      topic:
+- name: PROCESS_STATE
+  handlers:
+  - email:
+      to:
+- name: TICK_EVENT
+  handlers:
+  - aws_sns:
+      topic:

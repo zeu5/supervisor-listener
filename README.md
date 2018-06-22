@@ -1,2 +1,2 @@
 # supervisor-listener
-Supervisor event listener with handlers
+Listener for supervisor events with specific handlers
