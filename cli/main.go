@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"flag"
@@ -87,7 +87,7 @@ func usageFunc() {
 	fmt.Fprintf(flag.CommandLine.Output(), "Run <subcommand> --help for usage of the subcommand\n")
 }
 
-func ParseFlags() ([]*Flag, *SubCommand) {
+func ParseFlags() (map[string]*Flag, *SubCommand) {
 	flag.Usage = usageFunc
 	flag.Parse()
 
@@ -96,9 +96,5 @@ func ParseFlags() ([]*Flag, *SubCommand) {
 		s.flagset.Parse(flag.Args()[1:])
 		parsedsubcommand = s
 	}
-	var parsedglobalflags []*Flag
-	for _, globalflag := range globalflags {
-		parsedglobalflags = append(parsedglobalflags, globalflag)
-	}
-	return parsedglobalflags, parsedsubcommand
+	return globalflags, parsedsubcommand
 }

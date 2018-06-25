@@ -1,15 +1,18 @@
 ---
 
 handlers:
-- slack:
+- name: slack
+  config:
     token:
     webhook:
-- aws_sns:
+- name: aws_sns
+  config:
     access_key:
     access_secret:
     region:
     topic:
-- email:
+- name: email
+  config: 
     domain:
     port:
     user:
@@ -19,15 +22,19 @@ handlers:
 events:
 - name: PROCESS_STATE_EXITED
   handlers:
-  - slack:
+  - name: slack
+    config:
       channel:
-  - aws_sns:
+  - name: aws_sns
+    config:
       topic:
 - name: PROCESS_STATE
   handlers:
-  - email:
+  - name: email
+    config:
       to:
 - name: TICK_EVENT
   handlers:
-  - aws_sns:
+  - name: aws_sns
+    config:
       topic:
