@@ -15,16 +15,24 @@ var (
 	}
 )
 
-type TestHandler struct{}
-
-func (t *TestHandler) Init(flags []HandlerParam) error {
-	return nil
+type TestHandler struct {
+	event string
 }
 
 func (t *TestHandler) Run(event events.SupervisorEvent) error {
 	return nil
 }
 
-func NewTestHandler(flags []HandlerParam) Handler {
-	return &TestHandler{}
+func (t *TestHandler) SetEvent(event string) {
+	t.event = event
+}
+
+func (t *TestHandler) GetEvent() string {
+	return t.event
+}
+
+func NewTestHandler(event string, flags []HandlerParam) Handler {
+	return &TestHandler{
+		event: event,
+	}
 }

@@ -6,8 +6,9 @@ import (
 
 // Handler to a supervisor event
 type Handler interface {
-	Init([]HandlerParam) error
 	Run(events.SupervisorEvent) error
+	SetEvent(name string)
+	GetEvent() string
 }
 
 type HandlerParam struct {
