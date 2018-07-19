@@ -55,8 +55,8 @@ func getHandler(name string, flags map[string]*cli.Flag) (handlers.Handler, erro
 
 func main() {
 	setupCli()
-	globalflag, subcommand := cli.ParseFlags()
-	_, err := config.ParseConfig(globalflag["config"].Value)
+	globalflags, subcommand := cli.ParseFlags()
+	_, err := config.ParseConfig(globalflags["config"].Value)
 	if err == nil {
 		fmt.Println("Successfully parse config")
 	} else if subcommand != nil {
