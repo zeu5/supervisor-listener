@@ -1,17 +1,19 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/zeu5/supervisor-listener/config"
 	"github.com/zeu5/supervisor-listener/handlers"
 )
 
-func init() {
-	setupFlags()
-}
-
 func main() {
 	flags := parseFlags()
-	config := config.ParseConfig(flags)
+	config, err := config.ParseConfig(flags)
+	if err != nil {
+		fmt.Printf(err.Error())
+		return
+	}
 	handlers.InitHandlers(config)
 	initListener(config)
 	runListener()

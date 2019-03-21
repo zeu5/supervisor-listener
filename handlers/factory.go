@@ -1,7 +1,7 @@
 package handlers
 
 var (
-	handlers map[string]HandlerConcstructor
+	handlers = make(map[string]HandlerConcstructor)
 )
 
 func registerHandler(name string, creator HandlerConcstructor) {
