@@ -1,24 +1,21 @@
 package events
 
+type EventHeader struct {
+	Ver        string
+	Server     string
+	Serial     int
+	Pool       string
+	PoolSerial int
+	Eventtype  string
+	Len        int
+}
+
 type Event struct {
-	header map[string]string
-	body   map[string]string
+	Header  EventHeader
+	Rawbody string
+	Body    map[string]string
 }
 
-func GetEvent(header map[string]string, event string) *Event {
-	eventtype := header["eventname"]
-	body := parseBody(event, eventtype)
-	return &Event{
-		header: header,
-		body:   body,
-	}
-}
-
-func parseBody(bodystring string, eventtype string) map[string]string {
-	var body map[string]string
-	switch eventtype {
-	default:
-
-	}
-	return body
+func (e *Event) ParseBody() {
+	// Need to parse rawbody based on event type
 }

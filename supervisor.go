@@ -5,7 +5,7 @@ func readHeaderData() map[string]string {
 	return header
 }
 
-func readEventData() string {
+func readEventData(len int) string {
 	return ""
 }
 

@@ -40,11 +40,14 @@ func parseConfigFile(configfile *ini.File) *Config {
 
 	for _, section := range configfile.Sections() {
 		if strings.HasPrefix(section.Name(), "handler:") {
-			handlerconfig := parseHandlerSection(section)
-			handlerConfigs[handlerconfig.Name] = handlerconfig
+			if handlerconfig, ok := parseHandlerSection(section); ok {
+				handlerConfigs[handlerconfig.Name] = handlerconfig
+			}
 		}
 		if strings.HasPrefix(section.Name(), "listener:") {
-			listenerConfigs = append(listenerConfigs, parseListenerSection(section))
+			if listenerconfig, ok := parseListenerSection(section); ok {
+				listenerConfigs = append(listenerConfigs, listenerconfig)
+			}
 		}
 	}
 
@@ -55,8 +58,15 @@ func parseConfigFile(configfile *ini.File) *Config {
 }
 
 func validateConfig(config *Config) error {
-	// Need to validate if the handlers referenced in the listeners are right
 	// A place to add more constraints in the config if necessary in the future
+
+	for _, listenerconfig := range config.Listeners {
+		for _, handlername := range listenerconfig.Handlers {
+			if _, ok := config.Handlers[handlername]; !ok {
+				return fmt.Errorf("Handler of type %s does not exist in listener section %s", handlername, listenerconfig.Name)
+			}
+		}
+	}
 	return nil
 }
 

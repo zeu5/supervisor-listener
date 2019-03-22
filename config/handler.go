@@ -12,8 +12,15 @@ type HandlerConfig struct {
 	Props map[string]string
 }
 
-func parseHandlerSection(section *ini.Section) HandlerConfig {
+func parseHandlerSection(section *ini.Section) (HandlerConfig, bool) {
 	// Assumes that section has a valid handler name
+
+	var handlerconfig HandlerConfig
+
+	if !section.HasKey("type") {
+		return handlerconfig, false
+	}
+
 	handlername := strings.Split(section.Name(), ":")[1]
 	handlertype := section.Key("type").String()
 	handlerprops := make(map[string]string)
@@ -26,5 +33,5 @@ func parseHandlerSection(section *ini.Section) HandlerConfig {
 		Name:  handlername,
 		Type:  handlertype,
 		Props: handlerprops,
-	}
+	}, true
 }

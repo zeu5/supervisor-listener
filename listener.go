@@ -1,26 +1,53 @@
 package main
 
 import (
+	"bufio"
+	"fmt"
+	"os"
+	"sync"
+
 	"github.com/zeu5/supervisor-listener/config"
 	"github.com/zeu5/supervisor-listener/events"
-	"github.com/zeu5/supervisor-listener/handlers"
+)
+
+var (
+	in  *bufio.Reader
+	out *bufio.Writer
+	log *bufio.Writer
+	wg  sync.WaitGroup
 )
 
 func initListener(config *config.Config) {
-	// Initialise log channels and other options
+	in = bufio.NewReader(os.Stdin)
+	out = bufio.NewWriter(os.Stdout)
+	// Need to figure out what to do with log
 }
 
-func processEvent(header map[string]string, eventstring string) {
-	event := events.GetEvent(header, eventstring)
-	handler := handlers.GetHandlerInstance(event)
-	handler.HandleEvent(event)
+func processevents(eventchannel <-chan *events.Event) {
+	for event := range eventchannel {
+		event.ParseBody()
+		wg.Add(1)
+		go func(event *events.Event) {
+			defer wg.Done()
+			// Need to find handler for event and call the handler
+		}(event)
+	}
 }
 
-func runListener() {
+func runListener(sigint <-chan os.Signal) {
+	eventchannel := make(chan *events.Event, 10)
+
+	go processevents(eventchannel)
+
 	for {
-		header := readHeaderData()
-		eventstring := readEventData()
-		go processEvent(header, eventstring)
-		replyOK()
+		select {
+		case <-sigint:
+			fmt.Println("Recieved Sigint")
+			close(eventchannel)
+			wg.Wait()
+			return
+		}
+		//Keep reading from stdin
+
 	}
 }

@@ -10,15 +10,28 @@ type ListenerConfig struct {
 	Name        string
 	ProcessName string
 	Events      []string
-	Handler     string
+	Handlers    []string
 }
 
-func parseListenerSection(section *ini.Section) ListenerConfig {
+func parseListenerSection(section *ini.Section) (ListenerConfig, bool) {
+	requiredkeys := []string{"process", "events", "handlers"}
+	haskeys := true
+	for _, key := range requiredkeys {
+		if !section.HasKey(key) {
+			haskeys = false
+			break
+		}
+	}
+
+	var listenerconfig ListenerConfig
+	if !haskeys {
+		return listenerconfig, false
+	}
 
 	return ListenerConfig{
 		Name:        strings.Split(section.Name(), ":")[1],
 		ProcessName: section.Key("process").String(),
 		Events:      section.Key("events").Strings(","),
-		Handler:     section.Key("handler").String(),
-	}
+		Handlers:    section.Key("handlers").Strings(","),
+	}, true
 }

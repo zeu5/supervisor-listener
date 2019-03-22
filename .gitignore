@@ -16,6 +16,7 @@ vendor
 
 # VS code files
 .vscode
+debug
 
 # Mac files
 .DS_Store
