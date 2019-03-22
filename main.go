@@ -21,7 +21,7 @@ func main() {
 	handlers.InitHandlers(config)
 	initListener(config)
 
-	sigint := make(chan os.Signal)
+	sigint := make(chan os.Signal, 1)
 	signal.Notify(sigint, syscall.SIGINT)
 	signal.Notify(sigint, syscall.SIGTERM)
 

@@ -6,7 +6,7 @@ import (
 )
 
 type Handler interface {
-	HandleEvent(*events.Event)
+	HandleEvent(*events.Event) error
 }
 
 type HandlerConcstructor = func() Handler

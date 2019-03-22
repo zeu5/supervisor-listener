@@ -10,6 +10,6 @@ func addInstance(name string, handler Handler) {
 	handlerInstances[name] = handler
 }
 
-func GetHandlerInstance(event *events.Event) Handler {
-	return &SlackHandler{}
+func GetHandlerInstance(event *events.Event) (Handler, error) {
+	return &SlackHandler{}, nil
 }
