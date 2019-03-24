@@ -1,7 +1,6 @@
 package events
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -9,11 +8,11 @@ import (
 type EventHeader struct {
 	Ver        string
 	Server     string
-	Serial     int
+	Serial     int64
 	Pool       string
-	PoolSerial int
+	PoolSerial int64
 	Eventtype  string
-	Bodylength int
+	Bodylength int64
 }
 
 type Event struct {
@@ -23,16 +22,11 @@ type Event struct {
 	Type    string
 }
 
-func (e *Event) ParseBody() error {
-	eventbody, err := parseEventBody(e.Rawbody, e.Type)
-	if err != nil {
-		return err
-	}
-	e.Body = eventbody
-	return nil
+func (e *Event) ParseBody() {
+	e.Body = parseEventBody(e.Rawbody, e.Type)
 }
 
-func ParseHeader(headerstring string) (EventHeader, error) {
+func ParseHeader(headerstring string) (EventHeader, bool) {
 
 	requiredkeys := []string{"ver", "server", "serial", "pool", "poolserial", "eventname", "len"}
 	headermap := make(map[string]string)
@@ -51,22 +45,21 @@ func ParseHeader(headerstring string) (EventHeader, error) {
 		}
 	}
 
-	headerErr := fmt.Errorf("Error parsing header data")
 	if !valid {
-		return EventHeader{}, headerErr
+		return EventHeader{}, false
 	}
 
-	serial, err := strconv.Atoi(headermap["serial"])
+	serial, err := strconv.ParseInt(headermap["serial"], 10, 64)
 	if err != nil {
-		return EventHeader{}, headerErr
+		return EventHeader{}, false
 	}
-	poolserial, err := strconv.Atoi(headermap["poolserial"])
+	poolserial, err := strconv.ParseInt(headermap["poolserial"], 10, 64)
 	if err != nil {
-		return EventHeader{}, headerErr
+		return EventHeader{}, false
 	}
-	bodylength, err := strconv.Atoi(headermap["len"])
+	bodylength, err := strconv.ParseInt(headermap["len"], 10, 64)
 	if err != nil {
-		return EventHeader{}, headerErr
+		return EventHeader{}, false
 	}
 
 	return EventHeader{
@@ -77,5 +70,5 @@ func ParseHeader(headerstring string) (EventHeader, error) {
 		PoolSerial: poolserial,
 		Eventtype:  headermap["eventname"],
 		Bodylength: bodylength,
-	}, nil
+	}, true
 }

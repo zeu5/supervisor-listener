@@ -18,7 +18,7 @@ var (
 	out *bufio.Writer
 )
 
-func initBuffers() {
+func initIOBuffers() {
 	in = bufio.NewReader(os.Stdin)
 	out = bufio.NewWriter(os.Stdout)
 }
@@ -38,11 +38,19 @@ func readHeaderData() (string, error) {
 	return readHeaderDataFromReader(in)
 }
 
-func readEventData(len int) (string, error) {
+func readEventData(len int64) (string, error) {
 	if ok, err := emptyFile(os.Stdin); ok || err != nil {
 		return "", err
 	}
 	return readEventDataFromReader(in, len)
+}
+
+func replyOk() {
+	out.WriteString(OK)
+}
+
+func replyReady() {
+	out.WriteString(READY)
 }
 
 func readHeaderDataFromReader(in *bufio.Reader) (string, error) {
@@ -61,7 +69,7 @@ func readHeaderDataFromReader(in *bufio.Reader) (string, error) {
 	return headerbuilder.String(), nil
 }
 
-func readEventDataFromReader(in *bufio.Reader, len int) (string, error) {
+func readEventDataFromReader(in *bufio.Reader, len int64) (string, error) {
 	bodybytearray := make([]byte, len)
 	var bodystringbuilder strings.Builder
 	if _, err := io.ReadFull(in, bodybytearray); err != nil {
@@ -69,12 +77,4 @@ func readEventDataFromReader(in *bufio.Reader, len int) (string, error) {
 	}
 	bodystringbuilder.Write(bodybytearray)
 	return bodystringbuilder.String(), nil
-}
-
-func replyOkToWriter(out *bufio.Writer) {
-	out.WriteString(OK)
-}
-
-func replyReadyToWriter(out *bufio.Writer) {
-	out.WriteString(READY)
 }

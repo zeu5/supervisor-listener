@@ -8,7 +8,6 @@ import (
 type Handler interface {
 	HandleEvent(*events.Event) error
 }
-
 type HandlerConcstructor = func() Handler
 
 func InitHandlers(config *config.Config) {

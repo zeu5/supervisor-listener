@@ -14,7 +14,7 @@ var (
 )
 
 func initListener(config *config.Config) {
-	initBuffers()
+	initIOBuffers()
 	// Need to figure out what to do with log
 }
 
@@ -23,12 +23,7 @@ func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go func(event *events.Event, wg *sync.WaitGroup) {
 			defer wg.Done()
-			// Need to find handler for event and call the handler
-			err := event.ParseBody()
-			if err != nil {
-				// Log that you couldn't parse body
-				return
-			}
+			event.ParseBody()
 			handler, err := handlers.GetHandlerInstance(event)
 			if err != nil {
 				// Log error while getting handler
@@ -46,6 +41,7 @@ func runListener(sigint <-chan os.Signal) {
 	eventchannel := make(chan *events.Event, 10)
 
 	go processevents(eventchannel, &wg)
+	replyReady()
 
 	for {
 		select {
@@ -59,21 +55,18 @@ func runListener(sigint <-chan os.Signal) {
 				// Need to log error
 			}
 			if headerstring != "" {
-				header, err := events.ParseHeader(headerstring)
-				if err != nil {
+				header, ok := events.ParseHeader(headerstring)
+				bodystring, err := readEventData(header.Bodylength)
+				if err != nil || !ok {
 					// Log error
 				} else {
-					bodystring, err := readEventData(header.Bodylength)
-					if err != nil {
-						// Log error
-					} else {
-						eventchannel <- &events.Event{
-							Header:  header,
-							Rawbody: bodystring,
-							Type:    header.Eventtype,
-						}
+					eventchannel <- &events.Event{
+						Header:  header,
+						Rawbody: bodystring,
+						Type:    header.Eventtype,
 					}
 				}
+				replyOk()
 			}
 		}
 	}
