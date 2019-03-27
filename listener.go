@@ -24,14 +24,16 @@ func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
 		go func(event *events.Event, wg *sync.WaitGroup) {
 			defer wg.Done()
 			event.ParseBody()
-			handler, err := handlers.GetHandlerInstance(event)
+			handlers, err := handlers.GetHandlerInstances(event)
 			if err != nil {
 				// Log error while getting handler
 				return
 			}
-			err = handler.HandleEvent(event)
-			if err != nil {
-				// Log error when handling event
+			for _, handler := range handlers {
+				err = handler.HandleEvent(event)
+				if err != nil {
+					// Log error when handling event
+				}
 			}
 		}(event, wg)
 	}

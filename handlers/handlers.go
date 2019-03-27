@@ -7,8 +7,11 @@ import (
 
 type Handler interface {
 	HandleEvent(*events.Event) error
+	IsProcessSpecific() bool
+	Process() string
 }
-type HandlerConcstructor = func() Handler
+
+type HandlerConcstructor = func(map[string]string) (Handler, error)
 
 func InitHandlers(config *config.Config) {
 
