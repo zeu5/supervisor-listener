@@ -2,13 +2,12 @@ package main
 
 import "flag"
 
-func parseFlags() map[string]string {
+func parseFlags() (string, bool) {
 	var configpath string
+	var verbose bool
 	flag.StringVar(&configpath, "config", "/etc/supervisord/listener.conf", "Path to config file")
+	flag.BoolVar(&verbose, "verbose", false, "Verbosity level for logs")
 	flag.Parse()
 
-	flags := make(map[string]string)
-	flags["config"] = configpath
-
-	return flags
+	return configpath, verbose
 }

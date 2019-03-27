@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
 )
 
@@ -18,6 +20,7 @@ func parseHandlerSection(section *ini.Section) (HandlerConfig, bool) {
 	var handlerconfig HandlerConfig
 
 	if !section.HasKey("type") {
+		log.Info(fmt.Sprintf("Config handler section: %s does not have type key", section.Name()))
 		return handlerconfig, false
 	}
 

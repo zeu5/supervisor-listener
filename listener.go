@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/zeu5/supervisor-listener/config"
 	"github.com/zeu5/supervisor-listener/events"
 	"github.com/zeu5/supervisor-listener/handlers"
@@ -15,7 +17,6 @@ var (
 
 func initListener(config *config.Config) {
 	initIOBuffers()
-	// Need to figure out what to do with log
 }
 
 func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
@@ -26,13 +27,13 @@ func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
 			event.ParseBody()
 			handlers, err := handlers.GetHandlerInstances(event)
 			if err != nil {
-				// Log error while getting handler
+				log.Warn(fmt.Sprintf("Error fetching handler instance"), err)
 				return
 			}
 			for _, handler := range handlers {
 				err = handler.HandleEvent(event)
 				if err != nil {
-					// Log error when handling event
+					log.Warn(fmt.Sprintf("Error handling event: %s", event.Type), err)
 				}
 			}
 		}(event, wg)
@@ -54,13 +55,13 @@ func runListener(sigint <-chan os.Signal) {
 		default:
 			headerstring, err := readHeaderData()
 			if err != nil {
-				// Need to log error
+				log.Warn(err)
 			}
 			if headerstring != "" {
 				header, ok := events.ParseHeader(headerstring)
 				bodystring, err := readEventData(header.Bodylength)
 				if err != nil || !ok {
-					// Log error
+					log.Warn(err)
 				} else {
 					eventchannel <- &events.Event{
 						Header:  header,

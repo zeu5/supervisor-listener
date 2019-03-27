@@ -1,22 +1,22 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/zeu5/supervisor-listener/config"
 	"github.com/zeu5/supervisor-listener/handlers"
 )
 
 func main() {
 
-	flags := parseFlags()
-	config, err := config.ParseConfig(flags)
+	configpath, verbose := parseFlags()
+	initLogger(verbose)
+	config, err := config.ParseConfig(configpath)
 	if err != nil {
-		fmt.Printf(err.Error())
-		return
+		log.Fatal(err)
 	}
 	handlers.InitHandlers(config)
 	initListener(config)

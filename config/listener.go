@@ -1,8 +1,10 @@
 package config
 
 import (
+	"fmt"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
 )
 
@@ -25,6 +27,7 @@ func parseListenerSection(section *ini.Section) (ListenerConfig, bool) {
 
 	var listenerconfig ListenerConfig
 	if !haskeys {
+		log.Info(fmt.Sprintf("Config listener section: %s does not have required keys", section.Name()))
 		return listenerconfig, false
 	}
 
@@ -41,6 +44,7 @@ func parseListenerSection(section *ini.Section) (ListenerConfig, bool) {
 	eventsstring := section.Key("events").Value()
 	if strings.Contains(eventsstring, "PROCESS_STATE") || strings.Contains(eventsstring, "PROCESS_LOG") || strings.Contains(eventsstring, "PROCESS_COMMUNICATION") {
 		if _, ok := otherprops["process"]; !ok {
+			log.Info(fmt.Sprintf("Config listener section: %s does not have process key", section.Name()))
 			return listenerconfig, false
 		}
 	}

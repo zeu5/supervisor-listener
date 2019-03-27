@@ -29,7 +29,7 @@ func loadConfigFile(configfilepath string) (*ini.File, error) {
 		break
 	}
 	if !filefound {
-		return configfile, fmt.Errorf("Could not parse config")
+		return configfile, fmt.Errorf("Config file not found")
 	}
 	return configfile, nil
 }
@@ -70,11 +70,11 @@ func validateConfig(config *Config) error {
 	return nil
 }
 
-func ParseConfig(flags map[string]string) (*Config, error) {
+func ParseConfig(configpath string) (*Config, error) {
 
 	var config *Config
 
-	configfile, err := loadConfigFile(flags["config"])
+	configfile, err := loadConfigFile(configpath)
 	if err != nil {
 		return config, err
 	}

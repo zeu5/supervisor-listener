@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -16,7 +18,16 @@ const (
 var (
 	in  *bufio.Reader
 	out *bufio.Writer
+	err *bufio.Writer
 )
+
+func initLogger(verbose bool) {
+	if verbose {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+}
 
 func initIOBuffers() {
 	in = bufio.NewReader(os.Stdin)
