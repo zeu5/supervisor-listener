@@ -50,6 +50,54 @@ const (
 	ProcessGroupRemovedEvent = "PROCESS_GROUP_REMOVED"
 )
 
+// ParseHeader parses the string representaion of the supervisor event header string and validates it
+func ParseHeader(headerstring string) (EventHeader, bool) {
+
+	requiredkeys := []string{"ver", "server", "serial", "pool", "poolserial", "eventname", "len"}
+	headermap := make(map[string]string)
+	for _, keyvalue := range strings.Split(headerstring, " ") {
+		if strings.Contains(keyvalue, ":") {
+			s := strings.Split(keyvalue, ":")
+			headermap[s[0]] = s[1]
+		}
+	}
+
+	valid := true
+	for _, key := range requiredkeys {
+		if _, ok := headermap[key]; !ok {
+			valid = false
+			break
+		}
+	}
+
+	if !valid {
+		return EventHeader{}, false
+	}
+
+	serial, err := strconv.ParseInt(headermap["serial"], 10, 64)
+	if err != nil {
+		return EventHeader{}, false
+	}
+	poolserial, err := strconv.ParseInt(headermap["poolserial"], 10, 64)
+	if err != nil {
+		return EventHeader{}, false
+	}
+	bodylength, err := strconv.ParseInt(headermap["len"], 10, 64)
+	if err != nil {
+		return EventHeader{}, false
+	}
+
+	return EventHeader{
+		Ver:        headermap["ver"],
+		Server:     headermap["server"],
+		Serial:     serial,
+		Pool:       headermap["pool"],
+		PoolSerial: poolserial,
+		Eventtype:  headermap["eventname"],
+		Bodylength: bodylength,
+	}, true
+}
+
 func parseEventBody(bodystring, eventtype string) map[string]string {
 	eventmap := make(map[string]string)
 
@@ -93,10 +141,47 @@ func getEventMessage(event *Event) (string, error) {
 				return "", errEventBody
 			}
 			t := time.Unix(epoch, 0)
-			return t.String(), nil
+			message = fmt.Sprintf("Event %s at %s", event.Type, t.String())
 		}
 	case ProcessStateBackoffEvent, ProcessStateExitedEvent, ProcessStateFatalEvent, ProcessStateRunningEvent, ProcessStateStartingEvent, ProcessStateStoppedEvent, ProcessStateStoppingEvent, ProcessStateUnknownEvent:
-
+		processname, ok1 := event.Body["processname"]
+		fromstate, ok2 := event.Body["from_state"]
+		if ok1 && ok2 {
+			curstate := strings.Split(event.Type, "_")[2]
+			message = fmt.Sprintf("Process %s transitioned from state %s to %s", processname, fromstate, curstate)
+		} else {
+			return "", errEventBody
+		}
+	case RemoteCommunicationEvent:
+		comtype, ok1 := event.Body["type"]
+		data, ok2 := event.Body["data"]
+		if ok1 && ok2 {
+			message = fmt.Sprintf("Remote communication of type %s was sent with data %s", comtype, data)
+		} else {
+			return "", errEventBody
+		}
+	case ProcessLogStderrEvent, ProcessLogStdoutEvent:
+		processname, ok1 := event.Body["processname"]
+		data, ok2 := event.Body["data"]
+		if ok1 && ok2 {
+			out := strings.Split(event.Type, "_")[2]
+			message = fmt.Sprintf("Process %s output \"%s\" to its %s", processname, data, out)
+		} else {
+			return "", errEventBody
+		}
+	case ProcessCommunicationStderrEvent, ProcessCommunicationStdoutEvent:
+		processname, ok1 := event.Body["processname"]
+		data, ok2 := event.Body["data"]
+		if ok1 && ok2 {
+			out := strings.Split(event.Type, "_")[2]
+			message = fmt.Sprintf("Process %s communicated \"%s\" to supervisor on %s", processname, data, out)
+		} else {
+			return "", errEventBody
+		}
+	case SupervisorStateChanceRunningEvent:
+		message = "Supervisor started running"
+	case SupervisorStateChancestoppingEvent:
+		message = "Supervisor has stopped"
 	}
 	return message, nil
 }

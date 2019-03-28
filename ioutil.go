@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	READY = "READY\n"
-	OK    = "RESULT 2\nOK"
+	ready = "READY\n"
+	ok    = "RESULT 2\nOK"
 )
 
 var (
@@ -57,11 +57,11 @@ func readEventData(len int64) (string, error) {
 }
 
 func replyOk() {
-	out.WriteString(OK)
+	out.WriteString(ok)
 }
 
 func replyReady() {
-	out.WriteString(READY)
+	out.WriteString(ready)
 }
 
 func readHeaderDataFromReader(in *bufio.Reader) (string, error) {

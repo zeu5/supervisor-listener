@@ -1,10 +1,6 @@
 package events
 
-import (
-	"strconv"
-	"strings"
-)
-
+// EventHeader contains the properties of the header of an event dispatched by supervisor
 type EventHeader struct {
 	Ver        string
 	Server     string
@@ -15,6 +11,7 @@ type EventHeader struct {
 	Bodylength int64
 }
 
+// Event stores the properties of an event dispatched by supervisor
 type Event struct {
 	Header  EventHeader
 	Rawbody string
@@ -22,53 +19,14 @@ type Event struct {
 	Type    string
 }
 
+// ParseBody converts the string representaion of the body of the supervisor event
+// into a map of key values.
 func (e *Event) ParseBody() {
 	e.Body = parseEventBody(e.Rawbody, e.Type)
 }
 
-func ParseHeader(headerstring string) (EventHeader, bool) {
-
-	requiredkeys := []string{"ver", "server", "serial", "pool", "poolserial", "eventname", "len"}
-	headermap := make(map[string]string)
-	for _, keyvalue := range strings.Split(headerstring, " ") {
-		if strings.Contains(keyvalue, ":") {
-			s := strings.Split(keyvalue, ":")
-			headermap[s[0]] = s[1]
-		}
-	}
-
-	valid := true
-	for _, key := range requiredkeys {
-		if _, ok := headermap[key]; !ok {
-			valid = false
-			break
-		}
-	}
-
-	if !valid {
-		return EventHeader{}, false
-	}
-
-	serial, err := strconv.ParseInt(headermap["serial"], 10, 64)
-	if err != nil {
-		return EventHeader{}, false
-	}
-	poolserial, err := strconv.ParseInt(headermap["poolserial"], 10, 64)
-	if err != nil {
-		return EventHeader{}, false
-	}
-	bodylength, err := strconv.ParseInt(headermap["len"], 10, 64)
-	if err != nil {
-		return EventHeader{}, false
-	}
-
-	return EventHeader{
-		Ver:        headermap["ver"],
-		Server:     headermap["server"],
-		Serial:     serial,
-		Pool:       headermap["pool"],
-		PoolSerial: poolserial,
-		Eventtype:  headermap["eventname"],
-		Bodylength: bodylength,
-	}, true
+// GetEventMessage returns the representation of the event as a string to be communicated
+// through the handlers. It abstracts out dealing with different eventtypes
+func (e *Event) GetEventMessage() (string, error) {
+	return getEventMessage(e)
 }
