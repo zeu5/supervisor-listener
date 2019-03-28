@@ -12,11 +12,13 @@ import (
 )
 
 var (
-	wg sync.WaitGroup
+	wg          sync.WaitGroup
+	globalprops = make(map[string]string)
 )
 
 func initListener(config *config.Config) {
 	initIOBuffers()
+	globalprops = config.GlobalProps
 }
 
 func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
@@ -31,7 +33,7 @@ func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
 				return
 			}
 			for _, handler := range handlers {
-				err = handler.HandleEvent(event)
+				err = handler.HandleEvent(event, globalprops)
 				if err != nil {
 					log.Warn(fmt.Sprintf("Error handling event: %s", event.Type), err)
 				}
@@ -57,20 +59,18 @@ func runListener(sigint <-chan os.Signal) {
 			if err != nil {
 				log.Warn(err)
 			}
-			if headerstring != "" {
-				header, ok := events.ParseHeader(headerstring)
-				bodystring, err := readEventData(header.Bodylength)
-				if err != nil || !ok {
-					log.Warn(err)
-				} else {
-					eventchannel <- &events.Event{
-						Header:  header,
-						Rawbody: bodystring,
-						Type:    header.Eventtype,
-					}
+			header, ok := events.ParseHeader(headerstring)
+			bodystring, err := readEventData(header.Bodylength)
+			if err != nil || !ok {
+				log.Warn(err)
+			} else {
+				eventchannel <- &events.Event{
+					Header:  header,
+					Rawbody: bodystring,
+					Type:    header.Eventtype,
 				}
-				replyOk()
 			}
+			replyOk()
 		}
 	}
 

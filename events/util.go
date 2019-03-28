@@ -53,6 +53,10 @@ const (
 // ParseHeader parses the string representaion of the supervisor event header string and validates it
 func ParseHeader(headerstring string) (EventHeader, bool) {
 
+	emptyEventHeader := EventHeader{
+		Bodylength: 0,
+	}
+
 	requiredkeys := []string{"ver", "server", "serial", "pool", "poolserial", "eventname", "len"}
 	headermap := make(map[string]string)
 	for _, keyvalue := range strings.Split(headerstring, " ") {
@@ -71,20 +75,20 @@ func ParseHeader(headerstring string) (EventHeader, bool) {
 	}
 
 	if !valid {
-		return EventHeader{}, false
+		return emptyEventHeader, false
 	}
 
 	serial, err := strconv.ParseInt(headermap["serial"], 10, 64)
 	if err != nil {
-		return EventHeader{}, false
+		return emptyEventHeader, false
 	}
 	poolserial, err := strconv.ParseInt(headermap["poolserial"], 10, 64)
 	if err != nil {
-		return EventHeader{}, false
+		return emptyEventHeader, false
 	}
 	bodylength, err := strconv.ParseInt(headermap["len"], 10, 64)
 	if err != nil {
-		return EventHeader{}, false
+		return emptyEventHeader, false
 	}
 
 	return EventHeader{

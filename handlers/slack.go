@@ -8,7 +8,7 @@ type SlackHandler struct {
 	process string
 }
 
-func (s *SlackHandler) HandleEvent(event *events.Event) error {
+func (s *SlackHandler) HandleEvent(event *events.Event, props map[string]string) error {
 	return nil
 }
 

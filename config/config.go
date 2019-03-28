@@ -2,14 +2,16 @@ package config
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"gopkg.in/ini.v1"
 )
 
 type Config struct {
-	Handlers  map[string]HandlerConfig
-	Listeners []ListenerConfig
+	GlobalProps map[string]string
+	Handlers    map[string]HandlerConfig
+	Listeners   []ListenerConfig
 }
 
 func loadConfigFile(configfilepath string) (*ini.File, error) {
@@ -37,28 +39,65 @@ func loadConfigFile(configfilepath string) (*ini.File, error) {
 func parseConfigFile(configfile *ini.File) *Config {
 	handlerConfigs := make(map[string]HandlerConfig)
 	listenerConfigs := make([]ListenerConfig, 0)
+	globalprops := make(map[string]string)
+
+	defaultsection := configfile.Section(ini.DEFAULT_SECTION)
+	if defaultsection.HasKey("devicename") {
+		globalprops["devicename"] = defaultsection.Key("devicename").String()
+	} else {
+		if hostname, err := os.Hostname(); err == nil {
+			globalprops["devicename"] = hostname
+		} else {
+			globalprops["devicename"] = ""
+		}
+	}
 
 	for _, section := range configfile.Sections() {
 		if strings.HasPrefix(section.Name(), "handler:") {
-			if handlerconfig, ok := parseHandlerSection(section); ok {
-				handlerConfigs[handlerconfig.Name] = handlerconfig
-			}
+			handlerconfig := parseHandlerSection(section)
+			handlerConfigs[handlerconfig.Name] = handlerconfig
 		}
 		if strings.HasPrefix(section.Name(), "listener:") {
-			if listenerconfig, ok := parseListenerSection(section); ok {
-				listenerConfigs = append(listenerConfigs, listenerconfig)
-			}
+			listenerConfigs = append(listenerConfigs, parseListenerSection(section))
 		}
 	}
 
 	return &Config{
-		Handlers:  handlerConfigs,
-		Listeners: listenerConfigs,
+		Handlers:    handlerConfigs,
+		Listeners:   listenerConfigs,
+		GlobalProps: globalprops,
 	}
 }
 
 func validateConfig(config *Config) error {
 	// A place to add more constraints in the config if necessary in the future
+
+	// Handler section specific checks
+	for _, handlerconfig := range config.Handlers {
+		if handlerconfig.Type == "" {
+			return fmt.Errorf("Handler section has empty type")
+		}
+	}
+
+	// Listener section specific checks
+	for _, listenerconfig := range config.Listeners {
+		if len(listenerconfig.Events) == 0 {
+			return fmt.Errorf("Listener section %s is not subscribed to any events", listenerconfig.Name)
+		}
+		if len(listenerconfig.Handlers) == 0 {
+			return fmt.Errorf("Listener section %s does not have any handlers", listenerconfig.Name)
+		}
+		isProcSpecific := false
+		for _, event := range listenerconfig.Events {
+			if strings.Contains(event, "PROCESS") {
+				isProcSpecific = true
+				break
+			}
+		}
+		if _, ok := listenerconfig.Props["process"]; isProcSpecific && !ok {
+			return fmt.Errorf("Listener section %s is missing process key but has subscribed to process events", listenerconfig.Name)
+		}
+	}
 
 	for _, listenerconfig := range config.Listeners {
 		for _, handlername := range listenerconfig.Handlers {

@@ -1,10 +1,8 @@
 package config
 
 import (
-	"fmt"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/ini.v1"
 )
 
@@ -14,15 +12,8 @@ type HandlerConfig struct {
 	Props map[string]string
 }
 
-func parseHandlerSection(section *ini.Section) (HandlerConfig, bool) {
+func parseHandlerSection(section *ini.Section) HandlerConfig {
 	// Assumes that section has a valid handler name
-
-	var handlerconfig HandlerConfig
-
-	if !section.HasKey("type") {
-		log.Info(fmt.Sprintf("Config handler section: %s does not have type key", section.Name()))
-		return handlerconfig, false
-	}
 
 	handlername := strings.Split(section.Name(), ":")[1]
 	handlertype := section.Key("type").String()
@@ -36,5 +27,5 @@ func parseHandlerSection(section *ini.Section) (HandlerConfig, bool) {
 		Name:  handlername,
 		Type:  handlertype,
 		Props: handlerprops,
-	}, true
+	}
 }

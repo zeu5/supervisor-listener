@@ -18,7 +18,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	handlers.InitHandlers(config)
+	if err := handlers.InitHandlers(config); err != nil {
+		log.Fatal(err)
+	}
+
 	initListener(config)
 
 	sigint := make(chan os.Signal, 1)

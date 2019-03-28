@@ -17,7 +17,7 @@ func registerHandler(name string, creator HandlerConcstructor) bool {
 func getHandlerConstructor(name string) (HandlerConcstructor, error) {
 	c, ok := handlers[name]
 	if !ok {
-		return nil, fmt.Errorf("No such handler exists")
+		return nil, fmt.Errorf("No handler of type %s exists", name)
 	}
 	return c, nil
 }

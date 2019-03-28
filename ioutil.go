@@ -43,41 +43,29 @@ func emptyFile(file *os.File) (bool, error) {
 }
 
 func readHeaderData() (string, error) {
-	if ok, err := emptyFile(os.Stdin); ok || err != nil {
-		return "", err
-	}
 	return readHeaderDataFromReader(in)
 }
 
 func readEventData(len int64) (string, error) {
-	if ok, err := emptyFile(os.Stdin); ok || err != nil {
-		return "", err
-	}
 	return readEventDataFromReader(in, len)
 }
 
 func replyOk() {
 	out.WriteString(ok)
+	out.Flush()
 }
 
 func replyReady() {
 	out.WriteString(ready)
+	out.Flush()
 }
 
 func readHeaderDataFromReader(in *bufio.Reader) (string, error) {
-	var headerbuilder strings.Builder
-
-	for {
-		bytes, isPrefix, err := in.ReadLine()
-		if err != nil {
-			return "", fmt.Errorf("Could not read event header")
-		}
-		headerbuilder.Write(bytes)
-		if !isPrefix {
-			break
-		}
+	s, err := in.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("Could not read header form input")
 	}
-	return headerbuilder.String(), nil
+	return strings.TrimSuffix(s, "\n"), nil
 }
 
 func readEventDataFromReader(in *bufio.Reader, len int64) (string, error) {
