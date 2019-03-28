@@ -6,6 +6,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// ListenerConfig stores the properties declared in the listener section of the config file
 type ListenerConfig struct {
 	Name     string
 	Events   []string

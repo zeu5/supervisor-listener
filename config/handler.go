@@ -6,6 +6,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// HandlerConfig stores the properties of each handler section of the config
 type HandlerConfig struct {
 	Name  string
 	Type  string

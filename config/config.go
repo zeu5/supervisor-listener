@@ -8,6 +8,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
+// Config is the structure to hold the parsed configuration from the ini config file
 type Config struct {
 	GlobalProps map[string]string
 	Handlers    map[string]HandlerConfig
@@ -109,6 +110,7 @@ func validateConfig(config *Config) error {
 	return nil
 }
 
+// ParseConfig takes a file path and parses an ini config in that path or one of the default paths
 func ParseConfig(configpath string) (*Config, error) {
 
 	var config *Config

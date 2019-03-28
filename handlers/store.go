@@ -29,6 +29,9 @@ func addProcessHandlerInstance(eventtype string, phandler Handler) {
 	pHandlerInstances[eventtype][phandler.Process()] = append(pHandlerInstances[eventtype][phandler.Process()], phandler)
 }
 
+// GetHandlerInstances returns the instances which concern the specific event
+// The handler instances are organised based on the event type and process type.
+// If the event is specific to a process then the respective handlers are looked up in pHandlerInstances. handlerInstances otherwise.
 func GetHandlerInstances(event *events.Event) ([]Handler, error) {
 	if strings.Contains(event.Type, "PROCESS_STATE") || strings.Contains(event.Type, "PROCESS_COMMUNICATION") {
 		processhandlers, ok := pHandlerInstances[event.Type]
