@@ -19,14 +19,14 @@ func addHandlerInstance(eventtype string, handler Handler) {
 	handlerInstances[eventtype] = append(handlerInstances[eventtype], handler)
 }
 
-func addProcessHandlerInstance(eventtype string, phandler Handler) {
+func addProcessHandlerInstance(eventtype, process string, phandler Handler) {
 	if _, ok := pHandlerInstances[eventtype]; !ok {
 		pHandlerInstances[eventtype] = make(map[string][]Handler)
 	}
-	if _, ok := pHandlerInstances[eventtype][phandler.Process()]; !ok {
-		pHandlerInstances[eventtype][phandler.Process()] = make([]Handler, 0)
+	if _, ok := pHandlerInstances[eventtype][process]; !ok {
+		pHandlerInstances[eventtype][process] = make([]Handler, 0)
 	}
-	pHandlerInstances[eventtype][phandler.Process()] = append(pHandlerInstances[eventtype][phandler.Process()], phandler)
+	pHandlerInstances[eventtype][process] = append(pHandlerInstances[eventtype][process], phandler)
 }
 
 // GetHandlerInstances returns the instances which concern the specific event

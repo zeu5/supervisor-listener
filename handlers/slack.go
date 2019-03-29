@@ -17,11 +17,6 @@ func (s *SlackHandler) HandleEvent(event *events.Event, props map[string]string)
 	return nil
 }
 
-// Process - If the event is specific to a process it returns the process name. An empty string otherwise
-func (s *SlackHandler) Process() string {
-	return s.process
-}
-
 // NewSlackHandler creates a new handler based on the properties provided
 func NewSlackHandler(props map[string]string) (Handler, error) {
 	proc, ok := props["process"]

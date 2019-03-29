@@ -34,14 +34,6 @@ func initIOBuffers() {
 	out = bufio.NewWriter(os.Stdout)
 }
 
-func emptyFile(file *os.File) (bool, error) {
-	fs, err := file.Stat()
-	if err != nil {
-		return false, err
-	}
-	return fs.Size() == 0, nil
-}
-
 func readHeaderData() (string, error) {
 	return readHeaderDataFromReader(in)
 }

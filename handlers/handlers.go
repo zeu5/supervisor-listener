@@ -13,8 +13,6 @@ import (
 type Handler interface {
 	// HandlerEvent is the main method which handles the event that is dispatched form supervisor
 	HandleEvent(event *events.Event, props map[string]string) error
-	// Process - If the handler instance has subscribed to events of a process it returns the process name. An empty string otherwise
-	Process() string
 }
 
 // HandlerConstructor is a function which instantiates an Handler based on the given properties
@@ -39,7 +37,7 @@ func InitHandlers(config *config.Config) error {
 			}
 			for _, eventtype := range listenerconfig.Events {
 				if strings.Contains(eventtype, "PROCESS") {
-					addProcessHandlerInstance(eventtype, h)
+					addProcessHandlerInstance(eventtype, listenerconfig.Props["process"], h)
 				} else {
 					addHandlerInstance(eventtype, h)
 				}
