@@ -29,7 +29,7 @@ func processevents(eventchannel <-chan *events.Event, wg *sync.WaitGroup) {
 			event.ParseBody()
 			handlers, err := handlers.GetHandlerInstances(event)
 			if err != nil {
-				log.Warn(fmt.Sprintf("Error fetching handler instance"), err)
+				log.Warn(fmt.Sprintf("Error fetching handler instance : "), err)
 				return
 			}
 			for _, handler := range handlers {
@@ -59,10 +59,12 @@ func runListener(sigint <-chan os.Signal) {
 			if err != nil {
 				log.Warn(err)
 			}
-			header, ok := events.ParseHeader(headerstring)
-			bodystring, err := readEventData(header.Bodylength)
-			if err != nil || !ok {
-				log.Warn(err)
+			header, err1 := events.ParseHeader(headerstring)
+			bodystring, err2 := readEventData(header.Bodylength)
+			if err1 != nil {
+				log.Warn(err1)
+			} else if err2 != nil {
+				log.Warn(err2)
 			} else {
 				eventchannel <- &events.Event{
 					Header:  header,

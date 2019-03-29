@@ -36,18 +36,18 @@ func GetHandlerInstances(event *events.Event) ([]Handler, error) {
 	if strings.Contains(event.Type, "PROCESS_STATE") || strings.Contains(event.Type, "PROCESS_COMMUNICATION") {
 		processhandlers, ok := pHandlerInstances[event.Type]
 		if !ok {
-			return nil, fmt.Errorf("No handler for the eventtype")
+			return nil, fmt.Errorf("No handler for the eventtype : %s", event.Type)
 		}
 		handlers, ok := processhandlers[event.Body["processname"]]
 		if !ok {
-			return nil, fmt.Errorf("No handlers for the given process name")
+			return nil, fmt.Errorf("No handlers for the given process name : %s", event.Body["processname"])
 		}
 		return handlers, nil
 	}
 
 	handlers, ok := handlerInstances[event.Type]
 	if !ok {
-		return nil, fmt.Errorf("No handler for the eventtype")
+		return nil, fmt.Errorf("No handler for the eventtype : %s", event.Type)
 	}
 	return handlers, nil
 }

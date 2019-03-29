@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/zeu5/supervisor-listener/config"
@@ -12,9 +13,7 @@ import (
 type Handler interface {
 	// HandlerEvent is the main method which handles the event that is dispatched form supervisor
 	HandleEvent(event *events.Event, props map[string]string) error
-	// IsProcessSpecific determines if the handler instance listens to a process specific event or not
-	IsProcessSpecific() bool
-	// Process - If the event is specific to a process it returns the process name. An empty string otherwise
+	// Process - If the handler instance has subscribed to events of a process it returns the process name. An empty string otherwise
 	Process() string
 }
 
@@ -24,8 +23,8 @@ type HandlerConstructor = func(map[string]string) (Handler, error)
 // InitHandlers creates handler instances based on the provided configuration
 func InitHandlers(config *config.Config) error {
 	for _, listenerconfig := range config.Listeners {
-		for _, handlertype := range listenerconfig.Handlers {
-			handlerconfig := config.Handlers[handlertype]
+		for _, handlername := range listenerconfig.Handlers {
+			handlerconfig := config.Handlers[handlername]
 			c, err := getHandlerConstructor(handlerconfig.Type)
 			if err != nil {
 				return err
@@ -36,7 +35,7 @@ func InitHandlers(config *config.Config) error {
 			}
 			h, err := c(props)
 			if err != nil {
-				return err
+				return fmt.Errorf("Error instantiating handler instance of type %s for the listener section %s : %s", handlerconfig.Type, listenerconfig.Name, err)
 			}
 			for _, eventtype := range listenerconfig.Events {
 				if strings.Contains(eventtype, "PROCESS") {

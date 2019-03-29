@@ -51,7 +51,7 @@ const (
 )
 
 // ParseHeader parses the string representaion of the supervisor event header string and validates it
-func ParseHeader(headerstring string) (EventHeader, bool) {
+func ParseHeader(headerstring string) (EventHeader, error) {
 
 	emptyEventHeader := EventHeader{
 		Bodylength: 0,
@@ -66,29 +66,23 @@ func ParseHeader(headerstring string) (EventHeader, bool) {
 		}
 	}
 
-	valid := true
 	for _, key := range requiredkeys {
 		if _, ok := headermap[key]; !ok {
-			valid = false
-			break
+			return emptyEventHeader, fmt.Errorf("Required key : %s is missing in the header", key)
 		}
-	}
-
-	if !valid {
-		return emptyEventHeader, false
 	}
 
 	serial, err := strconv.ParseInt(headermap["serial"], 10, 64)
 	if err != nil {
-		return emptyEventHeader, false
+		return emptyEventHeader, fmt.Errorf("Could not convert serial to integer in header : %s", headerstring)
 	}
 	poolserial, err := strconv.ParseInt(headermap["poolserial"], 10, 64)
 	if err != nil {
-		return emptyEventHeader, false
+		return emptyEventHeader, fmt.Errorf("Could not convert poolserial to integer in header : %s", headerstring)
 	}
 	bodylength, err := strconv.ParseInt(headermap["len"], 10, 64)
 	if err != nil {
-		return emptyEventHeader, false
+		return emptyEventHeader, fmt.Errorf("Could not convert lenn to integer in header : %s", headerstring)
 	}
 
 	return EventHeader{
@@ -99,7 +93,7 @@ func ParseHeader(headerstring string) (EventHeader, bool) {
 		PoolSerial: poolserial,
 		Eventtype:  headermap["eventname"],
 		Bodylength: bodylength,
-	}, true
+	}, nil
 }
 
 func parseEventBody(bodystring, eventtype string) map[string]string {
